@@ -2,19 +2,28 @@
 
 
 #include "Player/RPGPlayerController.h"
+
+#include "AbilitySystemBlueprintLibrary.h"
 #include "EnhancedInputSubsystems.h"
 #include "EnhancedInputComponent.h"
+#include "NavigationPath.h"
+#include "NavigationSystem.h"
+#include "AbilitySystem/RPGAbilitySystemComponent.h"
+#include "Components/SplineComponent.h"
+#include "Input/RPGInputComponent.h"
 #include "Interaction/TargetInterface.h"
 
 ARPGPlayerController::ARPGPlayerController()
 {
 	bReplicates = true;
+	Spline = CreateDefaultSubobject<USplineComponent>("Spline");
 }
 
 void ARPGPlayerController::Tick(float DeltaSeconds)
 {
 	Super::Tick(DeltaSeconds);
 	CursorTrace();
+	AutoRun();
 }
 
 void ARPGPlayerController::BeginPlay()
@@ -24,7 +33,7 @@ void ARPGPlayerController::BeginPlay()
 	check(RPGInputContext);
 
 	UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(GetLocalPlayer());
-	check(Subsystem)
+	if (Subsystem)
 	Subsystem->AddMappingContext(RPGInputContext,0);
 
 	bShowMouseCursor = true;
@@ -42,9 +51,11 @@ void ARPGPlayerController::SetupInputComponent()
 {
 	Super::SetupInputComponent();
 
-	UEnhancedInputComponent* EnhancedInputComponent = CastChecked<UEnhancedInputComponent>(InputComponent);
-
-	EnhancedInputComponent->BindAction(MoveAction, ETriggerEvent::Triggered, this, &ARPGPlayerController::Move);
+	URPGInputComponent* RPGInputComponent = CastChecked<URPGInputComponent>(InputComponent);
+	RPGInputComponent->BindAction(MoveAction, ETriggerEvent::Triggered, this, &ARPGPlayerController::Move);
+	RPGInputComponent->BindAction(ShiftAction, ETriggerEvent::Started, this, &ARPGPlayerController::ShiftPressed);
+	RPGInputComponent->BindAction(ShiftAction, ETriggerEvent::Completed, this, &ARPGPlayerController::ShiftReleased);
+	RPGInputComponent->BindAbilityActions(InputConfig, this, &ThisClass::AbilityInputTagPressed, &ThisClass::AbilityInputTagReleased, &ThisClass::AbilityInputTagHeld);
 }
 
 void ARPGPlayerController::Move(const FInputActionValue& InputActionValue)
@@ -67,34 +78,125 @@ void ARPGPlayerController::Move(const FInputActionValue& InputActionValue)
 
 void ARPGPlayerController::CursorTrace()
 {
-	FHitResult Hit;
-	GetHitResultUnderCursor(ECC_Visibility, false, Hit);
-	if (!Hit.bBlockingHit) return;
+	GetHitResultUnderCursor(ECC_Visibility, false, CursorHit);
+	if (!CursorHit.bBlockingHit) return;
 
 	LastActor = CurrentActor;
-	CurrentActor = Hit.GetActor();
+	CurrentActor = CursorHit.GetActor();
 
-	if (LastActor == nullptr)
+	if (LastActor != CurrentActor)
 	{
-		if (CurrentActor != nullptr)
+		if (LastActor) LastActor->UnHighlightActor();
+		if (CurrentActor) CurrentActor->HighlightActor();
+	}
+}
+
+void ARPGPlayerController::AbilityInputTagPressed(FGameplayTag InputTag)
+{
+	FGameplayTag ComparisonTag = FGameplayTag::RequestGameplayTag(FName(TEXT("InputAction.Primary")));
+	if (InputTag.MatchesTagExact(ComparisonTag))
+	{
+		bTargeting = CurrentActor ? true : false;
+		bAutoRunning = false;
+	}
+}
+
+void ARPGPlayerController::AbilityInputTagReleased(FGameplayTag InputTag)
+{
+	FGameplayTag ComparisonTag = FGameplayTag::RequestGameplayTag(FName(TEXT("InputAction.Primary")));
+	
+	if (GetASC())
+	{
+		GetASC()->AbilityInputTagReleased(InputTag);
+	}
+	
+	if (!InputTag.MatchesTagExact(ComparisonTag))
+	{
+		return;
+	}
+	
+	if (!bTargeting && !bShiftKeyDown)
+	{
+		APawn* ControlledPawn = GetPawn();
+		if (FollowTime <= ShortPressThreshold && ControlledPawn)
 		{
-			CurrentActor->HighlightActor();
+			if (UNavigationPath* NavPath = UNavigationSystemV1::FindPathToLocationSynchronously(this, ControlledPawn->GetActorLocation(), CachedDestination))
+			{
+				Spline->ClearSplinePoints();
+				for (const FVector& PointLoc : NavPath->PathPoints)
+				{
+					Spline->AddSplinePoint(PointLoc, ESplineCoordinateSpace::World);
+				}
+				if (NavPath->PathPoints.Num() >0 )
+				{
+					CachedDestination = NavPath->PathPoints.Last();
+					bAutoRunning = true;
+				}
+			}
+		}
+		FollowTime = 0.f;
+		bTargeting = false;
+	}
+}
+
+void ARPGPlayerController::AbilityInputTagHeld(FGameplayTag InputTag)
+{
+	FGameplayTag ComparisonTag = FGameplayTag::RequestGameplayTag(FName(TEXT("InputAction.Primary")));
+	if (!InputTag.MatchesTagExact(ComparisonTag))
+	{
+		if (GetASC())
+		{
+			GetASC()->AbilityInputTagHeld(InputTag);
+		}
+		return;
+	}
+
+	if (bTargeting || bShiftKeyDown)
+	{
+		if (GetASC())
+		{
+			GetASC()->AbilityInputTagHeld(InputTag);
 		}
 	}
 	else
 	{
-		if (CurrentActor == nullptr)
+		FollowTime += GetWorld()->GetDeltaSeconds();
+
+		if (CursorHit.bBlockingHit)
 		{
-			LastActor->UnHighlightActor();
+			CachedDestination = CursorHit.ImpactPoint;
 		}
-		else
+
+		if (APawn* ControlledPawn = GetPawn())
 		{
-			if (LastActor != CurrentActor)
-			{
-				
-				LastActor->UnHighlightActor();
-				CurrentActor->HighlightActor();
-			}
+			const FVector WorldDirection = (CachedDestination - ControlledPawn->GetActorLocation()).GetSafeNormal();
+			ControlledPawn->AddMovementInput(WorldDirection);
+		}
+	}
+}
+
+URPGAbilitySystemComponent* ARPGPlayerController::GetASC()
+{
+	if (RPGAbilitySystemComponent == nullptr)
+	{
+		RPGAbilitySystemComponent = Cast<URPGAbilitySystemComponent>(UAbilitySystemBlueprintLibrary::GetAbilitySystemComponent(GetPawn<APawn>()));
+	}
+	return RPGAbilitySystemComponent;
+}
+
+void ARPGPlayerController::AutoRun()
+{
+	if (!bAutoRunning) return;
+	if (APawn* ControlledPawn = GetPawn())
+	{
+		const FVector LocationOnSpline = Spline->FindLocationClosestToWorldLocation(ControlledPawn->GetActorLocation(), ESplineCoordinateSpace::World);
+		const FVector Direction = Spline->FindDirectionClosestToWorldLocation(LocationOnSpline, ESplineCoordinateSpace::World);
+		ControlledPawn->AddMovementInput(Direction);
+
+		const float DistanceToDestination = (LocationOnSpline - CachedDestination).Length();
+		if (DistanceToDestination <= AutoRunAcceptanceRadius)
+		{
+			bAutoRunning = false;
 		}
 	}
 }

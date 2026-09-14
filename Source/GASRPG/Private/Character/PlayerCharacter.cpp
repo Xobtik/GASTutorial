@@ -3,7 +3,12 @@
 
 #include "Character/PlayerCharacter.h"
 
+#include "AbilitySystemComponent.h"
+#include "AbilitySystem/RPGAbilitySystemComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
+#include "Player/RPGPlayerController.h"
+#include "Player/RPGPlayerState.h"
+#include "UI/HUD/RPGHUD.h"
 
 
 // Sets default values
@@ -24,6 +29,46 @@ APlayerCharacter::APlayerCharacter()
 void APlayerCharacter::BeginPlay()
 {
 	Super::BeginPlay();
+	
+}
+
+void APlayerCharacter::PossessedBy(AController* NewController)
+{
+	Super::PossessedBy(NewController);
+	InitPlayerDetails();
+	AddCharacterAbilities();
+}
+
+void APlayerCharacter::OnRep_PlayerState()
+{
+	Super::OnRep_PlayerState();
+	InitPlayerDetails();
+}
+
+int32 APlayerCharacter::GetPlayerLevel()
+{
+	const ARPGPlayerState* RPGPlayerState = GetPlayerState<ARPGPlayerState>();
+	check(RPGPlayerState);
+	return RPGPlayerState->GetPlayerLevel();
+}
+
+void APlayerCharacter::InitPlayerDetails()
+{
+	ARPGPlayerState* CurrentPlayerState = GetPlayerState<ARPGPlayerState>();
+	check(CurrentPlayerState);
+	CurrentPlayerState->GetAbilitySystemComponent()->InitAbilityActorInfo(CurrentPlayerState, this);
+	Cast<URPGAbilitySystemComponent>(CurrentPlayerState->GetAbilitySystemComponent())->AbilityActorInfoSet();
+	AbilitySystemComponent = CurrentPlayerState->GetAbilitySystemComponent();
+	AttributeSet = CurrentPlayerState->GetAttributeSet();
+	if (ARPGPlayerController* CurrentPlayerController = Cast<ARPGPlayerController>(GetController()))
+	{
+		if (ARPGHUD* PlayerHUD = Cast<ARPGHUD>(CurrentPlayerController->GetHUD()))
+		{
+			PlayerHUD->InitOverlay(CurrentPlayerController, CurrentPlayerState, AbilitySystemComponent, AttributeSet);
+		}
+	}
+
+	InitializeDefaultAttributes();
 	
 }
 
