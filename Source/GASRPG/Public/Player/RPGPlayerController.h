@@ -8,6 +8,7 @@
 #include "RPGPlayerController.generated.h"
 
 class URPGAbilitySystemComponent;
+class UDamageTextComponent;
 class ITargetInterface;
 struct FInputActionValue;
 class UInputMappingContext;
@@ -26,6 +27,9 @@ public:
 	ARPGPlayerController();
 
 	virtual void Tick(float DeltaSeconds) override;
+
+	UFUNCTION(Client, Reliable)
+	void ShowDamageNumber(float DamageAmount, ACharacter* TargetCharacter, bool bBlockedHit, bool bCriticalHit);
 
 protected:	
 	virtual void BeginPlay() override;
@@ -80,4 +84,7 @@ private:
     TObjectPtr<USplineComponent> Spline;
 
 	void AutoRun();
+
+	UPROPERTY(EditDefaultsOnly)
+	TSubclassOf<UDamageTextComponent> DamageTextComponentClass;
 };

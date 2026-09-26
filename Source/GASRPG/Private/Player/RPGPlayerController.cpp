@@ -12,6 +12,8 @@
 #include "Components/SplineComponent.h"
 #include "Input/RPGInputComponent.h"
 #include "Interaction/TargetInterface.h"
+#include "GameFramework/Character.h"
+#include "UI/Widget/DamageTextComponent.h"
 
 ARPGPlayerController::ARPGPlayerController()
 {
@@ -24,6 +26,18 @@ void ARPGPlayerController::Tick(float DeltaSeconds)
 	Super::Tick(DeltaSeconds);
 	CursorTrace();
 	AutoRun();
+}
+
+void ARPGPlayerController::ShowDamageNumber_Implementation(float DamageAmount, ACharacter* TargetCharacter, bool bBlockedHit, bool bCriticalHit)
+{
+	if (IsValid(TargetCharacter) && DamageTextComponentClass && IsLocalController())
+	{
+		UDamageTextComponent* DamageText = NewObject<UDamageTextComponent>(TargetCharacter, DamageTextComponentClass);
+		DamageText->RegisterComponent();
+		DamageText->AttachToComponent(TargetCharacter->GetRootComponent(), FAttachmentTransformRules::KeepRelativeTransform);
+		DamageText->DetachFromComponent(FDetachmentTransformRules::KeepWorldTransform);
+		DamageText->SetDamageText(DamageAmount, bBlockedHit, bCriticalHit);
+	}
 }
 
 void ARPGPlayerController::BeginPlay()

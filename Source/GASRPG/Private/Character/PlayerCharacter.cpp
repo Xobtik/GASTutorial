@@ -35,14 +35,14 @@ void APlayerCharacter::BeginPlay()
 void APlayerCharacter::PossessedBy(AController* NewController)
 {
 	Super::PossessedBy(NewController);
-	InitPlayerDetails();
+	InitAbilityActorInfo();
 	AddCharacterAbilities();
 }
 
 void APlayerCharacter::OnRep_PlayerState()
 {
 	Super::OnRep_PlayerState();
-	InitPlayerDetails();
+	InitAbilityActorInfo();
 }
 
 int32 APlayerCharacter::GetPlayerLevel()
@@ -52,7 +52,7 @@ int32 APlayerCharacter::GetPlayerLevel()
 	return RPGPlayerState->GetPlayerLevel();
 }
 
-void APlayerCharacter::InitPlayerDetails()
+void APlayerCharacter::InitAbilityActorInfo()
 {
 	ARPGPlayerState* CurrentPlayerState = GetPlayerState<ARPGPlayerState>();
 	check(CurrentPlayerState);

@@ -28,6 +28,12 @@ namespace RPGGameplayTags
 	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Attributes_Secondary_MaxHealth);
 	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Attributes_Secondary_MaxMana);
 
+	//Resistance
+	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Attributes_Resistance_Fire);
+	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Attributes_Resistance_Lightning);
+	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Attributes_Resistance_Arcane);
+	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Attributes_Resistance_Physical);
+
 	//Input
 	UE_DECLARE_GAMEPLAY_TAG_EXTERN(InputAction_Primary);
 	UE_DECLARE_GAMEPLAY_TAG_EXTERN(InputAction_Secondary);
@@ -35,5 +41,17 @@ namespace RPGGameplayTags
 	UE_DECLARE_GAMEPLAY_TAG_EXTERN(InputAction_SecondAbility);
 	UE_DECLARE_GAMEPLAY_TAG_EXTERN(InputAction_ThirdAbility);
 	UE_DECLARE_GAMEPLAY_TAG_EXTERN(InputAction_FourthAbility);
+
+	//Damage
+	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Damage);
+	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Damage_Fire);
+	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Damage_Lightning);
+	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Damage_Arcane);
+	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Damage_Physical);
+
+	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Effects_HitReact);
+
+	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Cooldown_Fire_Bolt);
     
 }
+

@@ -24,6 +24,11 @@ namespace RPGGameplayTags
 	UE_DEFINE_GAMEPLAY_TAG_COMMENT(Attributes_Secondary_MaxHealth, "Attributes.Secondary.MaxHealth", "Maximum amount of Health obtainable");
 	UE_DEFINE_GAMEPLAY_TAG_COMMENT(Attributes_Secondary_MaxMana, "Attributes.Secondary.MaxMana", "Maximum amount of Mana obtainable");
 
+	UE_DEFINE_GAMEPLAY_TAG_COMMENT(Attributes_Resistance_Fire, "Attributes.Resistance.Fire", "Resistance to Fire damage");
+	UE_DEFINE_GAMEPLAY_TAG_COMMENT(Attributes_Resistance_Lightning, "Attributes.Resistance.Lightning", "Resistance to Lightning damage");
+	UE_DEFINE_GAMEPLAY_TAG_COMMENT(Attributes_Resistance_Arcane, "Attributes.Resistance.Arcane", "Resistance to Arcane damage");
+	UE_DEFINE_GAMEPLAY_TAG_COMMENT(Attributes_Resistance_Physical, "Attributes.Resistance.Physical", "Resistance to Physical damage");
+
 	//Input
 	UE_DEFINE_GAMEPLAY_TAG_COMMENT(InputAction_Primary, "InputAction.Primary", "The primary attack of the character");
 	UE_DEFINE_GAMEPLAY_TAG_COMMENT(InputAction_Secondary, "InputAction.Secondary", "The secondary attack of the character");
@@ -31,5 +36,14 @@ namespace RPGGameplayTags
 	UE_DEFINE_GAMEPLAY_TAG_COMMENT(InputAction_SecondAbility, "InputAction.SecondAbility", "The second ability of the character");
 	UE_DEFINE_GAMEPLAY_TAG_COMMENT(InputAction_ThirdAbility, "InputAction.ThirdAbility", "The third ability of the character");
 	UE_DEFINE_GAMEPLAY_TAG_COMMENT(InputAction_FourthAbility, "InputAction.FourthAbility", "The fourth ability of the character");
-	
+
+	UE_DEFINE_GAMEPLAY_TAG_COMMENT(Damage, "Damage", "Damage");
+	UE_DEFINE_GAMEPLAY_TAG_COMMENT(Damage_Fire, "Damage.Fire", "Fire Damage");
+	UE_DEFINE_GAMEPLAY_TAG_COMMENT(Damage_Lightning, "Damage.Lightning", "Lightning Damage");
+	UE_DEFINE_GAMEPLAY_TAG_COMMENT(Damage_Arcane, "Damage.Arcane", "Arcane Damage");
+	UE_DEFINE_GAMEPLAY_TAG_COMMENT(Damage_Physical, "Damage.Physical", "Physical Damage");
+
+	UE_DEFINE_GAMEPLAY_TAG_COMMENT(Effects_HitReact, "Effects.HitReact", "Tag granted when reacting to a hit");
+
+	UE_DEFINE_GAMEPLAY_TAG_COMMENT(Cooldown_Fire_Bolt, "Cooldown.Fire.Bolt", "Fire bolt cooldown");
 }

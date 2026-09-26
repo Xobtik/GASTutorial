@@ -29,6 +29,33 @@ UAbilitySystemComponent* ABaseGASCharacter::GetAbilitySystemComponent() const
 	return AbilitySystemComponent;
 }
 
+UAnimMontage* ABaseGASCharacter::GetHitReactMontage_Implementation()
+{
+	return HitReactMontage;
+}
+
+void ABaseGASCharacter::Die()
+{
+	Weapon->DetachFromComponent(FDetachmentTransformRules(EDetachmentRule::KeepWorld, true));
+	MulticastHandleDeath();
+}
+
+void ABaseGASCharacter::MulticastHandleDeath_Implementation()
+{
+	Weapon->SetSimulatePhysics(true);
+	Weapon->SetEnableGravity(true);
+	Weapon->SetCollisionEnabled(ECollisionEnabled::PhysicsOnly);
+	
+	GetMesh()->SetSimulatePhysics(true);
+	GetMesh()->SetEnableGravity(true);
+	GetMesh()->SetCollisionEnabled(ECollisionEnabled::PhysicsOnly);
+	GetMesh()->SetCollisionResponseToChannel(ECC_WorldStatic, ECR_Block);
+	
+	GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+
+	Dissolve();
+}
+
 void ABaseGASCharacter::BeginPlay()
 {
 	Super::BeginPlay();
@@ -41,7 +68,7 @@ FVector ABaseGASCharacter::GetCombatSocketLocation()
 	return Weapon->GetSocketLocation(WeaponTipSocketName);
 }
 
-void ABaseGASCharacter::InitPlayerDetails()
+void ABaseGASCharacter::InitAbilityActorInfo()
 {
 }
 
@@ -69,6 +96,22 @@ void ABaseGASCharacter::AddCharacterAbilities()
 	RPGASC->AddCharacterAbilities(StartupAbilities);
 
 	GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Red, "In add char abilities");
+}
+
+void ABaseGASCharacter::Dissolve()
+{
+	if (IsValid(DissolveMaterialInstance))
+	{
+		UMaterialInstanceDynamic* DynamicMatInst = UMaterialInstanceDynamic::Create(DissolveMaterialInstance, this);
+		GetMesh()->SetMaterial(0, DynamicMatInst);
+		StartDissolveTimeline(DynamicMatInst);
+	}
+	if (IsValid(WeaponDissolveMaterialInstance))
+	{
+		UMaterialInstanceDynamic* DynamicMatInst = UMaterialInstanceDynamic::Create(WeaponDissolveMaterialInstance, this);
+		Weapon->SetMaterial(0, DynamicMatInst);
+		StartWeaponDissolveTimeline(DynamicMatInst);
+	}
 }
 
 

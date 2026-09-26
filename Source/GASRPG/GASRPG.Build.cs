@@ -8,7 +8,7 @@ public class GASRPG : ModuleRules
 	{
 		PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
 	
-		PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "InputCore", "GameplayAbilities", "EnhancedInput", "UMG" });
+		PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "InputCore", "GameplayAbilities", "EnhancedInput", "UMG", "DeveloperSettings" });
 
 		PrivateDependencyModuleNames.AddRange(new string[] {  "GameplayTags" , "GameplayTasks", "NavigationSystem", "Niagara"  });
 

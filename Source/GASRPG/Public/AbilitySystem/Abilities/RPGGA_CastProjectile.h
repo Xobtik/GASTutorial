@@ -3,7 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "RPGGameplayAbility.h"
+#include "RPGGameplayDamageAbility.h"
 #include "RPGGA_CastProjectile.generated.h"
 
 class ARPGBaseProjectile;
@@ -12,7 +12,7 @@ class UGameplayEffect;
  * 
  */
 UCLASS()
-class GASRPG_API URPGGA_CastProjectile : public URPGGameplayAbility
+class GASRPG_API URPGGA_CastProjectile : public URPGGameplayDamageAbility
 {
 	GENERATED_BODY()
 	
@@ -25,7 +25,5 @@ protected:
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	TSubclassOf<ARPGBaseProjectile> ProjectileClass;
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
-	TSubclassOf<UGameplayEffect> DamageEffectClass;
+	
 };
