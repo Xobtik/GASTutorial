@@ -61,5 +61,11 @@ void URPGOverlayWidgetController::BindCallbacksToDependancies()
 			}
 		}
 	);
+
+	AbilitySystemComponent->AbilityCommittedCallbacks.AddLambda(
+		[this](UGameplayAbility* Ability)
+		{
+			AbilityCommittedDelegate.Broadcast(Ability);
+		});
 }
 
